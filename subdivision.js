@@ -6,7 +6,13 @@
 function getSubdividedTopological(Ps) {
     let PsNew = [];
     let N = Ps.length;
-    // TODO: Fill this in
+    for (let i = 0; i < N; i++) {
+        PsNew.push(Ps[i]);
+        let p = glMatrix.vec3.create();
+        glMatrix.vec3.scaleAndAdd(p, p, Ps[i], 0.5);
+        glMatrix.vec3.scaleAndAdd(p, p, Ps[(i+1)%N], 0.5);
+        PsNew.push(p);
+    }
     return PsNew;
 }
 
@@ -17,8 +23,14 @@ function getSubdividedTopological(Ps) {
  */
 function getSubdividedLinear(Ps) {
     let PsNew = [];
+    Ps = getSubdividedTopological(Ps);
     let N = Ps.length;
-    // TODO: Fill this in
+    for (let i = 0; i < N; i++) {
+        let p = glMatrix.vec3.create();
+        glMatrix.vec3.scaleAndAdd(p, p, Ps[(i+N-1)%N], 0.5);
+        glMatrix.vec3.scaleAndAdd(p, p, Ps[(i+1)%N], 0.5);
+        PsNew.push(p);
+    }
     return PsNew;
 }
 
@@ -29,9 +41,26 @@ function getSubdividedLinear(Ps) {
  * @returns {list of 2N vec3} Subdivided points 
  */
 function getSubdividedWeighted(Ps, kernel) {
+    let Ps2 = [];
+    for (let i = 0; i < Ps.length; i++) {
+        Ps2.push(Ps[i]);
+        Ps2.push(glMatrix.vec3.create());
+    }
+    let N = Ps2.length;
+    // 1 4 6 4 1
+    let kSum = 0;
+    for (let i = 0; i < kernel.length; i++) {
+        kSum += kernel[i];
+    }
+    let K = Math.floor(kernel.length/2);
     let PsNew = [];
-    let N = Ps.length;
-    // TODO: Fill this in
+    for (let i = 0; i < N; i++) {
+        let p = glMatrix.vec3.create();
+        for (let k = -K; k <= K; k++) {
+            glMatrix.vec3.scaleAndAdd(p, p, Ps2[(i+k+N)%N], 2*kernel[K+k]/kSum);
+        }
+        PsNew.push(p);
+    }
     return PsNew;
 }
 
